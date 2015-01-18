@@ -1,11 +1,44 @@
 {% extends 'wadmin/frame_edit.html' %}
+{% block ext_header %}
+    <script src="{{ STATIC_URL }}js/nicEdit.js" xmlns="http://www.w3.org/1999/html"></script>
+    <script xmlns="http://www.w3.org/1999/html">
+        $(function () {
+
+            new nicEditor({
+                iconsPath: '{{ STATIC_URL }}images/nicEditorIcons.gif',
+                uploadURI: '/uploadImage/',
+                uploadClass: 'image'
+            }).panelInstance('content');
+
+        });
+
+    </script>
+{% endblock %}
 {% block fields %}
 
     {% with field=form.title %}
         {% include 'wadmin/inclute/form_field_text.html' %}
     {% endwith %}
     {% with field=form.content %}
-        {% include 'wadmin/inclute/form_field_text.html' %}
+        <div class="form-group {% if field.errors %}has-error{% endif %}">
+
+            <label for="content" class="col-sm-2 control-label">{{ field.label }}
+                {% if field.field.required %}<span class="required">*</span>{% endif %}
+            </label>
+
+            <div class="col-sm-10 controls">
+                <div class="row" style="max-width: 500px;">
+                    <textarea cols="100" name="{{ field.name }}" rows="35" id="content"></textarea>
+                </div>
+
+                <p class="help-block">{{ field.field.help_text }}</p>
+                {% for error in field.errors %}
+                    <p id="error_{{ forloop.counter }}_{{ field.auto_id }}"
+                       class="text-danger">{{ error }}</p>
+                {% endfor %}
+            </div>
+
+        </div>
     {% endwith %}
 {% endblock %}
 {% block buttons %}

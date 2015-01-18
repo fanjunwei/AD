@@ -1,9 +1,11 @@
 # coding=utf-8
 import base64
 from functools import update_wrapper
+import json
 import os
 import random
 from django import http
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
@@ -17,14 +19,35 @@ from django.contrib.auth import login as auth_login
 from django.contrib.auth import logout as auth_logout
 from django.views.generic.edit import FormMixin
 from django.views.generic.list import MultipleObjectMixin
+from util.tools import getResult
 from wadmin.forms import *
 from django.utils.http import urlencode
 from django.db import models
-from wadmin.models import Article
+from wadmin.models import Article, UploadImage
 
 DOT = '.'
 PREVIOUS_PAGE = '<'
 NEXT_PAGE = '>'
+
+
+def uploadImage(request):
+    image = request.FILES.get('image', None)
+
+    if image:
+        dbImage = UploadImage()
+        dbImage.name = image.name
+        image.file.size = image.size
+        dbImage.image.save(image.name, image.file)
+        dbImage.save()
+        o = {
+            'upload': {
+                'links': {
+                    'original': dbImage.image.url
+                }
+            },
+        }
+        return HttpResponse(json.dumps(o), 'application/json')
+    return getResult(False)
 
 
 def get_img_code(request):
