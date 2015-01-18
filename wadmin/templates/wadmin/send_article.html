@@ -28,7 +28,8 @@
 
             <div class="col-sm-10 controls">
                 <div class="row" style="max-width: 500px;">
-                    <textarea cols="100" name="{{ field.name }}" rows="35" id="content"></textarea>
+                    <textarea cols="100" name="{{ field.name }}" rows="35"
+                              id="content">{{ field.value|default_if_none:''|safe }}</textarea>
                 </div>
 
                 <p class="help-block">{{ field.field.help_text }}</p>
