@@ -415,6 +415,8 @@ class ArticleView(FrameView):
         if id:
             try:
                 object = Article.objects.get(id=id)
+                object.visit_count += 1
+                object.save()
                 kwargs['object'] = object
                 self.title = object.title
             except:
