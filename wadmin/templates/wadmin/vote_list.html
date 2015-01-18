@@ -1,0 +1,142 @@
+{% extends 'wadmin/frame.html' %}
+{% block ext_header %}
+    <script src="{{ STATIC_URL }}wadmin/js/change_list.js"></script>
+    <script>
+        function save(value) {
+            $.ajax({
+                type: 'POST',
+                url: "{% url 'wadmin:sort_vote_item' %}",
+                data: {'value': value}
+            });
+        }
+        $(function () {
+            var tbody = $('tbody');
+            tbody.sortable({
+                connectWith: "tbody",
+                forcePlaceholderSize: true,
+                cursor: "move",
+                cancel: ".unsort, .tab-content",
+                stop: function (event, ui) {
+                    var ids = [];
+                    $("tbody").find("input[type=checkbox]").each(function () {
+                        ids.push($(this).val());
+                    });
+                    save(ids.join(','));
+                }
+            });
+            tbody.disableSelection();
+        });
+
+    </script>
+    <style>
+        tbody tr {
+            cursor: ns-resize;
+        }
+    </style>
+{% endblock %}
+{% block content %}
+    {% if view.vote %}
+        <form action="" method="post" xmlns="http://www.w3.org/1999/html">
+            <div class="panel well">
+                <div class="panel-header">
+                    <label for="vote_summary"><strong>投票说明</strong></label>
+                </div>
+                <div class="panel-body">
+                    <textarea rows="5" class="form-control" id="vote_summary"
+                              name="vote_summary">{{ view.vote.summary }}</textarea>
+
+                </div>
+                <div class="panel-footer">
+                    <button type="submit" name="__action_set_vote_summary" class="btn btn-default">修改</button>
+                </div>
+
+            </div>
+
+        </form>
+    {% endif %}
+    <form action="" method="post" xmlns="http://www.w3.org/1999/html">
+        <div class="panel">
+            <div class="panel-body">
+                <div class="btn-group">
+                    <button name="delete" class="btn btn-danger"><span
+                            class="glyphicon glyphicon-trash"></span>删除所选
+                    </button>
+                    <a href="{% url 'wadmin:vote_edit' '' %}{{ view.get_query_string }}"
+                       class="btn btn-primary"><span
+                            class="glyphicon glyphicon-plus"></span>添加</a>
+                </div>
+            </div>
+        </div>
+        <nav>
+            <ul class="pagination">
+                {% for page in page_range %}
+                    {{ page }}
+                {% endfor %}
+            </ul>
+        </nav>
+        <div class="table-responsive">
+            <div class="help-block">
+                拖动可修改投票题目次序
+            </div>
+            <table class="table table-striped table-bordered table-hover" id="object_table">
+                <thead>
+                <tr>
+                    <th scope="col" style="width: 12px"><input type="checkbox"></th>
+                    <th scope="col">题目</th>
+                    <th scope="col">选择方式</th>
+                    <th scope="col">选项</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for object in object_list %}
+                    <tr>
+                        <td scope="col" style="width: 12px"><input name="id" value="{{ object.pk }}" type="checkbox">
+                        </td>
+                        <td>
+                            <a href="{% url 'wadmin:vote_edit' object.pk %}{{ view.get_query_string }}">
+                                {{ object.title }}
+                            </a>
+                        </td>
+                        <td>
+                            {% if object.required %}
+                                必答题,
+                                {% if object.max_select == 1 %}
+                                    单选
+                                {% elif object.max_select > 1 %}
+                                    最多选择{{ object.max_select }}项
+                                {% else %}
+                                    多选
+                                {% endif %}
+                            {% else %}
+                                选答题,
+                                {% if object.max_select > 0 %}
+                                    最多选择{{ object.max_select }}项
+                                {% else %}
+                                    多选
+                                {% endif %}
+                            {% endif %}
+                        </td>
+                        <td>
+                            <ul>
+                                {% for option in object.voteoption_set.all %}
+                                    <li>{{ option.name }}</li>
+                                {% endfor %}
+                            </ul>
+                        </td>
+
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% include 'wadmin/inclute/change_list_delete_confirm.html' %}
+    </form>
+    <nav>
+        <ul class="pagination">
+            {% for page in page_range %}
+                {{ page }}
+            {% endfor %}
+        </ul>
+    </nav>
+{% endblock %}

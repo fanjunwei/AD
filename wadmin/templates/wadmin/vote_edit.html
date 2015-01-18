@@ -1,0 +1,95 @@
+{% extends 'wadmin/frame_edit.html' %}
+{% block ext_header %}
+    <script>
+        function addOption(btn) {
+            var inputgroup = $(btn).parent().parent();
+            var html = [];
+            html.push('<div class="input-group clearfix" style="max-width: 300px;margin-bottom: 4px">');
+            html.push('<input type="text" class="form-control" id="id_options" name="options">');
+            html.push('<span class="input-group-btn">');
+            html.push('<button onclick="deleteOption(this);" type="button" class="btn btn-danger">');
+            html.push('<span class="glyphicon glyphicon-trash"></span>');
+            html.push('</button>');
+            html.push('<button onclick="addOption(this);" type="button" class="btn btn-primary">');
+            html.push('<span class="glyphicon glyphicon-plus"></span>');
+            html.push('</button>');
+            html.push('</span>');
+            html.push('</div>');
+            var html_text = html.join('\n');
+            inputgroup.after(html_text);
+
+        }
+        function deleteOption(btn) {
+            var inputgroup = $(btn).parent().parent();
+            var parent = inputgroup.parent();
+            var option_count = parent.find('.input-group').length;
+            if (option_count > 1) {
+                inputgroup.remove();
+            }
+        }
+    </script>
+{% endblock %}
+{% block fields %}
+    {% with field=form.vote %}
+        {% include 'wadmin/inclute/form_field_hiden.html' %}
+    {% endwith %}
+    {% with field=form.title %}
+        {% include 'wadmin/inclute/form_field_text.html' %}
+    {% endwith %}
+    {% with field=form.required %}
+        {% include 'wadmin/inclute/form_field_checkbox.html' %}
+    {% endwith %}
+    {% with field=form.max_select %}
+        {% include 'wadmin/inclute/form_field_text.html' %}
+    {% endwith %}
+
+    <div class="form-group ">
+
+        <label for="id_options" class="col-sm-2 control-label">选项
+        </label>
+
+        <div class="col-sm-10 controls ">
+            {% for option in options %}
+                <div class="input-group clearfix" style="max-width: 300px;margin-bottom: 4px">
+                    <input type="text" class="form-control" id="id_options" name="options" value="{{ option }}">
+                <span class="input-group-btn">
+                         <button onclick="deleteOption(this);" type="button" class="btn btn-danger">
+                             <span class="glyphicon glyphicon-trash"></span>
+                         </button>
+                        <button onclick="addOption(this);" type="button" class="btn btn-primary">
+                            <span class="glyphicon glyphicon-plus"></span>
+                        </button>
+                </span>
+                </div>
+            {% empty %}
+                <div class="input-group clearfix" style="max-width: 300px;margin-bottom: 4px">
+                    <input type="text" class="form-control" id="id_options" name="options">
+                <span class="input-group-btn">
+                         <button onclick="deleteOption(this);" type="button" class="btn btn-danger">
+                             <span class="glyphicon glyphicon-trash"></span>
+                         </button>
+                        <button onclick="addOption(this);" type="button" class="btn btn-primary">
+                            <span class="glyphicon glyphicon-plus"></span>
+                        </button>
+                </span>
+                </div>
+            {% endfor %}
+
+
+        </div>
+
+    </div>
+{% endblock %}
+{% block buttons %}
+    <div class="btn-group">
+
+        <button type="submit" name="__action_save" class="btn btn-default"><span
+                class="glyphicon glyphicon-floppy-disk"></span>保存
+        </button>
+        <button type="submit" name="__action_save_new" class="btn btn-default"><span
+                class="glyphicon glyphicon-new-window"></span>
+            保存并添加下一个
+        </button>
+        <a class="btn btn-default" href="{% url "wadmin:vote_list" %}{{ view.get_query_string }}">取消</a>
+    </div>
+{% endblock %}
