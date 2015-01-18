@@ -1,7 +1,36 @@
 {% extends 'wadmin/frame.html' %}
+{% block ext_header %}
+    <script src="{{ STATIC_URL }}wadmin/js/change_list.js"></script>
+{% endblock %}
 {% block content %}
-    <div style="margin: auto;text-align: center">
-        <iframe allowtransparency="true" frameborder="0" width="255" height="98" scrolling="no"
-                src="http://tianqi.2345.com/plugin/widget/index.htm?s=1&z=1&t=1&v=0&d=1&k=&f=1&q=1&e=0&a=1&c=58362&w=255&h=98"></iframe>
-    </div>
+    <form action="" method="post" xmlns="http://www.w3.org/1999/html">
+        <nav>
+            <ul class="pagination">
+                {% for page in page_range %}
+                    {{ page }}
+                {% endfor %}
+            </ul>
+        </nav>
+
+
+        {% for object in object_list %}
+            <a href="{% url 'wadmin:article' object.id %}">
+                <div class="well">
+                    作者:{{ object.user.username }}<br>
+                    {{ object.title }}
+
+                    <div class="text-right">{{ object.create_time }}</div>
+                </div>
+            </a>
+        {% endfor %}
+
+        {% include 'wadmin/inclute/change_list_delete_confirm.html' %}
+    </form>
+    <nav>
+        <ul class="pagination">
+            {% for page in page_range %}
+                {{ page }}
+            {% endfor %}
+        </ul>
+    </nav>
 {% endblock %}

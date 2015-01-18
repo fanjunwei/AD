@@ -1,0 +1,37 @@
+{% extends 'wadmin/base.html' %}
+
+{% block body %}
+    <iframe src="http://www.sina.com.cn" id="ifid"></iframe>
+    <div onclick="alert('1');">
+        <script>
+            var dsaid = 27525;
+            var dwidth = 960;
+            var dheight = 60;
+        </script>
+        <script type="text/javascript" src="http://unionjs.dianxin.com/showPic.js" name="showpic"
+                charset="utf-8"></script>
+        <script type="text/javascript">
+            var dianxin_said = 27526;
+            var dianxin_width = 960;
+            var dianxin_height = 60;
+        </script>
+        <script type="text/javascript" src="http://unionjs.dianxin.com/dianxin_showcc.js" charset="utf-8"></script>
+    </div>
+    <script>
+
+        function injectClick() {
+            $('iframe').each(function () {
+
+                $(this).find("body").attr("onclick", "alert('click')");
+            });
+
+        }
+
+        function testIf() {
+            $('#ifid').find("body").attr("onclick", "alert('click')");
+        }
+
+        //setTimeout(injectClick,3000);
+        testIf();
+    </script>
+{% endblock %}

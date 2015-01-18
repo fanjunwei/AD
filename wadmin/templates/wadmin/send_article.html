@@ -1,0 +1,20 @@
+{% extends 'wadmin/frame_edit.html' %}
+{% block fields %}
+
+    {% with field=form.title %}
+        {% include 'wadmin/inclute/form_field_text.html' %}
+    {% endwith %}
+    {% with field=form.content %}
+        {% include 'wadmin/inclute/form_field_text.html' %}
+    {% endwith %}
+{% endblock %}
+{% block buttons %}
+    <div class="btn-group">
+
+        <button type="submit" name="__action_save" class="btn btn-default"><span
+                class="glyphicon glyphicon-floppy-disk"></span>发表
+        </button>
+
+        <a class="btn btn-default" href="{% url "home" %}">取消</a>
+    </div>
+{% endblock %}

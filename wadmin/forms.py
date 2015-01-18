@@ -8,8 +8,8 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import User
 from django.forms import SplitDateTimeWidget
-from util.tools import getCachedAccessWechatObj
-from weixin.models import *
+from wadmin.models import Article
+
 
 __author__ = u'范俊伟'
 
@@ -151,148 +151,17 @@ class ChangePasswordForm(forms.Form):
         return user
 
 
-class WeiXinPublicAccountForm(forms.ModelForm):
+class ArticleForm(forms.ModelForm):
     def __init__(self, request=None, *args, **kwargs):
         self.request = request
-        super(WeiXinPublicAccountForm, self).__init__(*args, **kwargs)
-
-    id = forms.CharField(widget=forms.HiddenInput, required=False)
+        super(ArticleForm, self).__init__(*args, **kwargs)
 
 
     class Meta:
-        model = WeiXinPublicAccount
-        fields = ['id', 'name', 'type', 'appID', 'appSecret']
-
-    def clean(self):
-        appID = self.cleaned_data["appID"]
-        appSecret = self.cleaned_data["appSecret"]
-        if appID and appSecret:
-            if not getCachedAccessWechatObj(appID, appSecret):
-                raise forms.ValidationError('appID或appSecret错误')
-        return super(WeiXinPublicAccountForm, self).clean()
+        model = Article
+        fields = ['title', 'content']
 
     def save(self, commit=True):
-        obj = super(WeiXinPublicAccountForm, self).save(commit=False)
-        obj.user = self.request.user
-        if not obj.token:
-            obj.token = str(uuid.uuid1()).replace('-', '').upper()
-        if not obj.appID:
-            obj.appID = None
-        if not obj.appSecret:
-            obj.appSecret = None
-        if commit:
-            obj.save()
-        return obj
-
-
-class SubjectForm(forms.ModelForm):
-    start_time = forms.DateTimeField(widget=SplitDateTimeWidget, label=u'开始时间')
-    end_time = forms.DateTimeField(widget=SplitDateTimeWidget, label=u'结束时间')
-
-
-    def __init__(self, request=None, *args, **kwargs):
-        self.request = request
-        super(SubjectForm, self).__init__(*args, **kwargs)
-
-    class Meta:
-        model = Subject
-        fields = ['account', 'name', 'start_time', 'end_time', 'is_check', 'status', 'background', 'logo']
-
-    def clean_account(self):
-        account = self.cleaned_data["account"]
-        if not account.user == self.request.user:
-            raise forms.ValidationError(u'非法数据')
-        return account
-
-    def save(self, commit=True):
-        obj = super(SubjectForm, self).save(commit=False)
-        if not obj.user_id:
-            obj.user_id = self.request.user.pk
-        if not obj.url_ticket:
-            obj.url_ticket = str(uuid.uuid1()).replace('-', '').upper()
-        if commit:
-            obj.save()
-        return obj
-
-
-class ProgrammeForm(forms.ModelForm):
-    def __init__(self, request=None, *args, **kwargs):
-        self.request = request
-        super(ProgrammeForm, self).__init__(*args, **kwargs)
-
-    class Meta:
-        model = Programme
-        fields = ['name', 'subject', 'template']
-
-    def clean_subject(self):
-        subject = self.cleaned_data["subject"]
-        if not subject.user_id == self.request.user.pk:
-            raise forms.ValidationError(u'非法数据')
-        return subject
-
-    def save(self, commit=True):
-        obj = super(ProgrammeForm, self).save(commit=False)
-        subject = obj.subject
-        account = subject.account
-        if obj.user_id == None:
-            obj.user_id = self.request.user.pk
-        if obj.account_id != account.pk:
-            obj.account_id = account.pk
-            obj.scene_id = None
-            obj.ticket = None
-            obj.index = None
-
-        if obj.scene_id == None:
-            pros = Programme.objects.filter(account_id=account.pk).order_by('-scene_id')[:1]
-            scene_id = 1
-            if pros.count() > 0:
-                scene_id = pros[0].scene_id + 1
-            obj.scene_id = scene_id
-        if obj.ticket == None:
-            if account.appID and account.appSecret:
-                wechat = getCachedAccessWechatObj(account.appID, account.appSecret)
-                if wechat:
-                    try:
-                        res = wechat.create_qrcode(action_name="QR_LIMIT_SCENE",
-                                                   action_info={"scene": {"scene_id": obj.scene_id}})
-                        obj.ticket = res.get('ticket', None)
-                    except:
-                        pass
-        if obj.index == None:
-            index = 1
-            pros = Programme.objects.filter(subject=subject).order_by('-index')[:1]
-            if pros.count() > 0:
-                index = pros[0].index + 1
-            obj.index = index
-
-        if commit:
-            obj.save()
-            if obj.template.type.value == 'vote' and (not hasattr(obj, 'vote') or obj.vote == None):
-                Vote.objects.create(user_id=self.request.user.pk, programme=obj)
-
-        return obj
-
-
-class VoteItemForm(forms.ModelForm):
-    def __init__(self, request=None, *args, **kwargs):
-        self.request = request
-        super(VoteItemForm, self).__init__(*args, **kwargs)
-
-    class Meta:
-        model = VoteItem
-        fields = ['title', 'required', 'max_select', 'vote']
-
-    def save(self, commit=True):
-        obj = super(VoteItemForm, self).save(commit=False)
-        vote = obj.vote
-        if not obj.user_id:
-            obj.user_id = self.request.user.pk
-        if obj.index == None:
-            index = 1
-            pros = VoteItem.objects.filter(vote=vote).order_by('-index')[:1]
-            if pros.count() > 0:
-                index = pros[0].index + 1
-            obj.index = index
-        if commit:
-            obj.save()
-        return obj
+        object = super(ArticleForm, self).save(commit=False)
+        object.user = self.request.user
+        object.save()

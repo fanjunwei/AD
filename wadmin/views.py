@@ -20,6 +20,7 @@ from django.views.generic.list import MultipleObjectMixin
 from wadmin.forms import *
 from django.utils.http import urlencode
 from django.db import models
+from wadmin.models import Article
 
 DOT = '.'
 PREVIOUS_PAGE = '<'
@@ -39,7 +40,7 @@ def get_img_code(request):
 
 def logout(request):
     auth_logout(request)
-    return http.HttpResponseRedirect(request.REQUEST.get('next', reverse('wadmin:home')))
+    return http.HttpResponseRedirect(request.REQUEST.get('next', reverse('home')))
 
 
 def admin_view_decorator(func):
@@ -117,7 +118,7 @@ class LoginView(BaseView):
             auth_login(request, self.form.get_user())
             if request.session.test_cookie_worked():
                 request.session.delete_test_cookie()
-            return http.HttpResponseRedirect(request.REQUEST.get('next', request.get_full_path()))
+            return http.HttpResponseRedirect(request.REQUEST.get('next', reverse('home')))
         else:
             return self.get(request, *args, **kwargs)
 
@@ -135,32 +136,25 @@ class RegisterView(BaseView):
         self.form = RegisterForm(request=request, data=request.POST)
         if self.form.is_valid():
             self.form.save()
-            return http.HttpResponseRedirect(request.REQUEST.get('next', reverse('wadmin:home')))
+            return http.HttpResponseRedirect(request.REQUEST.get('next', reverse('home')))
         else:
             return self.get(request, *args, **kwargs)
 
 
 class FrameView(BaseView):
     def get_site_menu(self):
-        return [
-            {'title': u'管理', 'menus':
-                [
-                    {'title': u'公众号管理',
-                     'icon': 'glyphicon-star',
-                     'url': reverse('wadmin:public_account_list')},
-                    {'title': u'活动管理',
-                     'icon': 'glyphicon-star',
-                     'url': reverse('wadmin:subject_list')},
-                ]
-            },
-            # {'title': u'查看', 'menus':
-            # [
-            # {'title': u'微信用户',
-            # 'icon': 'glyphicon-star',
-            # 'url': '/'},
-            #     ]
-            # },
-        ]
+        if self.request.user.is_active:
+            return [
+                {'title': u'功能', 'menus':
+                    [
+                        {'title': u'发笑话',
+                         'icon': 'glyphicon-star',
+                         'url': reverse('wadmin:send_article')},
+                    ]
+                },
+            ]
+        else:
+            return []
 
     def get_context_data(self, **kwargs):
         kwargs = super(FrameView, self).get_context_data(**kwargs)
@@ -348,14 +342,19 @@ class FrameFormView(FormMixin, FrameView):
         return form
 
 
-class HomeView(FrameView):
+class HomeView(BaseListView):
+    need_site_permission = False
     template_name = 'wadmin/home.html'
-    title = u'主页'
+    title = u'列表'
+
+    def get_queryset(self):
+        queryset = Article.objects.all()
+        return queryset
 
 
 class ChangePasswordView(FrameFormView):
     template_name = 'wadmin/change_password.html'
-    title = u'修改密码'
+
     form_class = ChangePasswordForm
 
     def form_valid(self, request, *args, **kwargs):
@@ -364,9 +363,48 @@ class ChangePasswordView(FrameFormView):
         return self.get(request, *args, **kwargs)
 
 
+class SendArticleView(FrameFormView):
+    template_name = 'wadmin/send_article.html'
+    title = u'发笑话'
+    form_class = ArticleForm
+
+    def get_object_instance(self):
+        id = self.kwargs.get('id', None)
+        if id:
+            try:
+                instance = Article.objects.get(id=id)
+                return instance
+            except:
+                pass
+
+    def form_valid(self, request, *args, **kwargs):
+        self.form.save()
+        messages.success(request, u'完成')
+        return http.HttpResponsePermanentRedirect(reverse('home'))
+
+
+class ArticleView(FrameView):
+    template_name = 'wadmin/article.html'
+    need_site_permission = False
+
+    def get_context_data(self, **kwargs):
+        id = kwargs['id']
+        if id:
+            try:
+                object = Article.objects.get(id=id)
+                kwargs['object'] = object
+                self.title = object.title
+            except:
+                self.title = '无内容'
+        else:
+            self.title = '无内容'
+
+        return super(ArticleView, self).get_context_data(**kwargs)
+
+
 class TestADView(FrameView):
     need_site_permission = False
-    template_name = 'ad_test.html'
+    template_name = 'wadmin/ad_test.html'
     title = u'ad_text'
 
 

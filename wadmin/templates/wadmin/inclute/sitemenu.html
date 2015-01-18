@@ -1,6 +1,6 @@
 <ul class="well nav nav-pills nav-stacked">
     <li>
-        <a href="{% url 'wadmin:home' %}"><span class="glyphicon glyphicon-home"></span>主页</a>
+        <a href="{% url 'home' %}"><span class="glyphicon glyphicon-home"></span>列表</a>
     </li>
     {% for item in nav_menu %}
         <li class="nav-header {% if item.selected %} active{% endif %}">

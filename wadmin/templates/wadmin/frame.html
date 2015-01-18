@@ -6,21 +6,28 @@
     <!-- navbar -->
     <div id="top-nav" class="navbar navbar-xs navbar-inverse">
         <div class="navbar-header">
-            <p class="navbar-brand">微信墙管理</p>
+            <p class="navbar-brand">广告Demo</p>
         </div>
         <div class="navbar-collapse collapse">
             <ul class="nav navbar-nav navbar-right" style="margin-right: 5px">
-                <li class="dropdown">
-                    <a class="dropdown-toggle" role="button" data-toggle="dropdown" href="#">
-                        <strong>欢迎， {{ user.get_username }}</strong> <span class="caret"></span></a>
-                    <ul id="g-account-menu" class="dropdown-menu" role="menu">
-                        <li><a href="{% url 'wadmin:change_password' %}"><span class="glyphicon glyphicon-cog"></span>
-                            更改密码</a></li>
-                    </ul>
-                </li>
-                <li><a href="{% url 'wadmin:logout' %}"><span class="glyphicon glyphicon-log-out"></span><span
-                        class="hidden-sm hidden-xs">注销</span></a>
-                </li>
+                {% if user.is_active %}
+                    <li class="dropdown">
+                        <a class="dropdown-toggle" role="button" data-toggle="dropdown" href="#">
+                            <strong>欢迎， {{ user.get_username }}</strong> <span class="caret"></span></a>
+                        <ul id="g-account-menu" class="dropdown-menu" role="menu">
+                            <li><a href="{% url 'wadmin:change_password' %}"><span
+                                    class="glyphicon glyphicon-cog"></span>
+                                更改密码</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="{% url 'wadmin:logout' %}"><span class="glyphicon glyphicon-log-out"></span><span
+                            class="hidden-sm hidden-xs">注销</span></a>
+                    </li>
+                {% else %}
+                    <li><a href="{% url 'wadmin:login' %}"><span class="glyphicon glyphicon-log-in"></span><span
+                            class="hidden-sm hidden-xs">登录</span></a>
+                    </li>
+                {% endif %}
             </ul>
         </div>
     </div>
